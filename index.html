@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Campus Route Finder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #eef5f0;
+            margin: 0;
+            padding: 0;
+            color: #1e3a2f;
+        }
+        header {
+            background: #1b6b4a;
+            color: white;
+            text-align: center;
+            padding: 22px;
+        }
+        header h1 { margin: 0; }
+        .wrap { max-width: 900px; margin: 20px auto; padding: 0 16px 30px; }
+        h2 { color: #1b6b4a; }
+        .stats {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .stat, .card {
+            background: white;
+            border-radius: 8px;
+            padding: 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            flex: 1;
+            min-width: 140px;
+            text-align: center;
+        }
+        .stat b { display: block; font-size: 22px; color: #1b6b4a; }
+        .diagram {
+            background: white;
+            border-radius: 8px;
+            padding: 24px;
+            text-align: center;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+            line-height: 1.6;
+        }
+        .node {
+            display: inline-block;
+            background: #1b6b4a;
+            color: white;
+            padding: 8px 14px;
+            border-radius: 6px;
+            margin: 4px;
+        }
+        .row { margin: 6px 0; }
+        .arrow { color: #1b6b4a; font-weight: bold; }
+        .finder {
+            background: white;
+            border-radius: 8px;
+            padding: 18px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+        }
+        select, button {
+            padding: 8px 12px;
+            margin: 6px;
+            font-size: 15px;
+        }
+        button {
+            background: #1b6b4a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+        }
+        #result {
+            margin-top: 12px;
+            font-weight: bold;
+            color: #1b6b4a;
+        }
+        .cards { display: flex; gap: 12px; flex-wrap: wrap; }
+        .card h3 { margin: 0 0 8px; color: #1b6b4a; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Campus Route Finder</h1>
+    </header>
+    <div class="wrap">
+        <h2>Statistics</h2>
+        <div class="stats">
+            <div class="stat"><b>6</b>Locations</div>
+            <div class="stat"><b>6</b>Connections</div>
+            <div class="stat"><b>1</b>Graph</div>
+            <div class="stat"><b>BFS</b>Route Finder</div>
+        </div>
+
+        <h2>Campus Graph</h2>
+        <div class="diagram">
+            <div class="row"><span class="node">Main Gate</span></div>
+            <div class="arrow">↓</div>
+            <div class="row">
+                <span class="node">Library</span>
+                <span class="arrow">→</span>
+                <span class="node">Lab</span>
+            </div>
+            <div class="row">
+                <span class="arrow">↓</span>
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                <span class="arrow">↓</span>
+            </div>
+            <div class="row">
+                <span class="node">Auditorium</span>
+                &nbsp;&nbsp;
+                <span class="node">Hostel</span>
+            </div>
+            <div class="arrow">↑</div>
+            <div class="row"><span class="node">Canteen</span></div>
+        </div>
+
+        <h2>Route Finder</h2>
+        <div class="finder">
+            <label>Source:
+                <select id="src"></select>
+            </label>
+            <label>Destination:
+                <select id="dest"></select>
+            </label>
+            <button onclick="findRoute()">Find Route</button>
+            <div id="result"></div>
+        </div>
+
+        <h2>Data Structures Used</h2>
+        <div class="cards">
+            <div class="card">
+                <h3>Graph</h3>
+                <p>Represents campus locations and connections.</p>
+            </div>
+            <div class="card">
+                <h3>Linked List</h3>
+                <p>Stores adjacent locations.</p>
+            </div>
+            <div class="card">
+                <h3>Adjacency List</h3>
+                <p>Represents graph connections efficiently.</p>
+            </div>
+            <div class="card">
+                <h3>BFS</h3>
+                <p>Finds a route between two locations.</p>
+            </div>
+        </div>
+    </div>
+    <script>
+        var places = ["Main Gate", "Library", "Canteen", "Lab", "Hostel", "Auditorium"];
+        var adj = [
+            [1, 2],
+            [0, 3, 5],
+            [0, 4],
+            [1, 4],
+            [2, 3],
+            [1]
+        ];
+        var s = document.getElementById("src");
+        var d = document.getElementById("dest");
+        for (var i = 0; i < places.length; i++) {
+            s.innerHTML += "<option>" + places[i] + "</option>";
+            d.innerHTML += "<option>" + places[i] + "</option>";
+        }
+        d.selectedIndex = 4;
+
+        function findRoute() {
+            var src = s.selectedIndex, dest = d.selectedIndex;
+            var visited = [0, 0, 0, 0, 0, 0];
+            var parent = [-1, -1, -1, -1, -1, -1];
+            var q = [], f = 0;
+            visited[src] = 1;
+            q.push(src);
+            while (f < q.length) {
+                var u = q[f++];
+                if (u === dest) break;
+                for (var k = 0; k < adj[u].length; k++) {
+                    var v = adj[u][k];
+                    if (!visited[v]) {
+                        visited[v] = 1;
+                        parent[v] = u;
+                        q.push(v);
+                    }
+                }
+            }
+            if (!visited[dest]) {
+                document.getElementById("result").innerText = "No route found.";
+                return;
+            }
+            var path = [];
+            for (var cur = dest; cur !== -1; cur = parent[cur]) path.push(places[cur]);
+            path.reverse();
+            document.getElementById("result").innerText = "BFS Route: " + path.join(" -> ");
+        }
+    </script>
+</body>
+</html>
